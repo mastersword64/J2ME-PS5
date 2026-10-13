@@ -1,0 +1,13 @@
+# build output
+*.o
+*.a
+*.elf
+*.bin
+dist/
+deps/
+java/cls*/
+java/toolcls/
+java/*.jar
+installer/*.elf
+tile/eboot.bin
+tile/eboot.elf

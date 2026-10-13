@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# Stand-in linker for the PS5 OpenJDK build: the console cannot load shared libraries,
+# so instead of linking libX.so this packs the objects into libX.a next to it.
+import sys, os, subprocess, shlex
+AR = "/opt/ps5-payload-sdk/bin/prospero-ar"
+args = []
+for a in sys.argv[1:]:
+    if a.startswith("@") and os.path.isfile(a[1:]):
+        args += shlex.split(open(a[1:]).read())
+    else:
+        args.append(a)
+out = None; objs = []
+i = 0
+while i < len(args):
+    a = args[i]
+    if a == "-o":
+        out = args[i + 1]; i += 2; continue
+    if a.endswith(".o") and os.path.isfile(a):
+        objs.append(a)
+    i += 1
+if out is None:
+    sys.exit(0)
+os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+base = out[:-3] if out.endswith(".so") else out
+arc = base + ".a"
+if os.path.exists(arc):
+    os.remove(arc)
+if objs:
+    subprocess.check_call([AR, "rcs", arc] + objs)
+open(out, "wb").write(b"PS5 static build placeholder\n")
